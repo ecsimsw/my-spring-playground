@@ -1,5 +1,7 @@
 package com.ecsimsw.gateway.controller;
 
+import com.ecsimsw.gateway.domain.BlockedUser;
+import com.ecsimsw.gateway.domain.BURepo;
 import com.ecsimsw.gateway.service.RouteService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -8,10 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -32,6 +31,19 @@ public class RouteController {
 
     private final WebClient webClient;
     private final RouteService routeService;
+    private final BURepo BURepo;
+
+    @GetMapping("/api/hi")
+    public ResponseEntity<Void> hi() {
+        BURepo.save(new BlockedUser("sdfsdf"));
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/api/bye")
+    public ResponseEntity<String> bye() {
+        var hi = BURepo.findById("sdfsdf").orElseThrow();
+        return ResponseEntity.ok(hi.toString());
+    }
 
     @RequestMapping("/api/{service}/**")
     public Mono<ResponseEntity<String>> routeRequest(
