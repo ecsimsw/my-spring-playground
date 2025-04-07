@@ -1,4 +1,27 @@
-# Playground
+# Spring playground
+
+### WebClient, 이벤트 전달
+- 이벤트를 단순히 전달하는 상황에서 WebClient를 사용했다.
+- 기존 블록킹 방식의 RestTemplate는 외부 API의 응답 시간에 영향을 받아 호출한 스레드가 응답을 기다리며 차단된다.
+- 이로 인해 응답 시간과 상관없이 기존 처리 흐름을 유지하려면 멀티스레딩이 필요하다.
+- 반면, WebClient는 논블로킹 방식으로 외부 API 요청을 처리한다.
+- 호출한 스레드는 응답을 기다리지 않고 이후의 작업을 계속 처리할 수 있다.
+- 응답 결과나 에러는 Mono/Flux 기반의 이벤트 스트림으로 처리된다.
+- 멀티스레딩을 사용하는 것이 아닌, Netty의 이벤트 루프를 활용하기에 리소스 효율이 더 좋다.
+- 요청과 응답 헤더에 TraceId를 삽입하고 이로 MDC를 대신하여 로깅하였다.
+
+``` java
+notificationClient.postAsAsync()
+    .doOnError(WebClientResponseException.class, ex -> {
+        log.error("Failed to deliver notification event : {}, status : {}, body : {}",
+            ex.getHeaders().getFirst(TRACE_ID),
+            ex.getStatusCode(),
+            ex.getResponseBodyAsString()
+        );
+    }).subscribe();
+        return user.getId();
+    }
+```
 
 ### MDC(Mapped Diagnostic Context)
 - 한 요청의 처리 흐름이 단일 서버가 아닌, 여러 서버로 전파되는 경우 로깅이 까다롭다.
